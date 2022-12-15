@@ -21,5 +21,8 @@ def index_view():
         if short and URLMap.query.filter_by(short=short).first():
             flash('Short is already used')
             return render_template('index.html', form=form)
+    url = URLMap(
+        
+    )
     return render_template('index.html', form=form)
         
