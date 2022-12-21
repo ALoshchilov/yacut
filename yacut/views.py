@@ -25,4 +25,3 @@ def index_view():
         
     )
     return render_template('index.html', form=form)
-        
