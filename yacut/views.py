@@ -6,21 +6,19 @@ from flask import abort, flash, redirect, render_template, url_for
 from . import app, db
 from .forms import UrlCutForm
 from .models import URLMap
-
-
-def create_random_short(base_url='http://yacut.ru', lenght=6):
-    return (
-        f'{base_url}/{"".join([choice(ascii_letters + digits) for _ in range(lenght)])}'
-    )
+from .utils import generate_unique_short_id, is_short_unique
 
 @app.route('/', methods=['GET', 'POST'])
 def index_view():
     form = UrlCutForm()
-    if form.validate_on_submit():
-        short = form.short.data
-        if short and URLMap.query.filter_by(short=short).first():
-            flash('Short is already used')
-            return render_template('index.html', form=form)
+    if not form.validate_on_submit():
+        return render_template('index.html', form=form)
+    short = form.custom_id.data
+    if not short:
+        short = generate_unique_short_id()
+    if not is_short_unique(short):
+        flash('Short is already used')
+        return render_template('index.html', form=form)
     url = URLMap(
         
     )
