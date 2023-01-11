@@ -27,8 +27,8 @@ class URLMap(db.Model):
         for db_field, input_field in URLMAP_AS_DICT_FIELDS.items():
             if db_field == 'short':
                 urlmap_dict[input_field] = (
-                    f'{BASE_URL}/{str(getattr(self, db_field))}'
+                    f'{BASE_URL}/{getattr(self, db_field)}'
                 )
                 continue
-            urlmap_dict[input_field] = f'{str(getattr(self, db_field))}'
+            urlmap_dict[input_field] = getattr(self, db_field)
         return urlmap_dict
