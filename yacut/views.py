@@ -19,7 +19,16 @@ def index_view():
     if not is_short_unique(short):
         flash('Short is already used')
         return render_template('index.html', form=form)
-    url = URLMap(
-        
+    url_map = URLMap(
+        original = form.url.data,
+        short = short
     )
+    db.session.add(url_map)
+    db.session.commit()
     return render_template('index.html', form=form)
+
+@app.route('/<short_id>')
+def redirect_to_original(short_id):
+    return redirect(
+        URLMap.query.filter_by(short=short_id).first_or_404().original
+    )

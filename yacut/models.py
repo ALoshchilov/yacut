@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from sqlalchemy.orm import validates
+
 from .settings import BASE_URL
 from yacut import db
 
@@ -14,6 +16,10 @@ class URLMap(db.Model):
     original = db.Column(db.String(2048), nullable=False)
     short = db.Column(db.String(16), nullable=False, unique=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    @validates('short')
+    def validate_short():
+        pass
 
     def from_dict(self, data):
         for db_field, form_field in URLMAP_AS_DICT_FIELDS.items():
