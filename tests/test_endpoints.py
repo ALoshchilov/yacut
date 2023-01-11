@@ -16,6 +16,8 @@ def test_create_id(client):
     assert list(got.json.keys()) == ['short_link', 'url'], (
         'При создании короткой ссылки в ответе должны быть ключи `url, short_link`'
     )
+    print(400 * '@')
+    print(got.json)
     assert got.json == {
         'url': py_url,
         'short_link': 'http://localhost/py',
@@ -127,6 +129,7 @@ def test_generated_unique_short_id(json_data, client):
             'Для запроса, в котором short_id отсутствует или содержит пустую '
             'строку - генерируйте уникальный short_id.'
         )
+    print(got)
     assert got.status_code == 201, (
         'При создании короткой ссылки без явно указанного имени '
         'должен возвращаться статус-код 201'

@@ -1,19 +1,25 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, URLField
-from wtforms.validators import DataRequired, Length, Optional, Regexp, URL
+from wtforms.validators import (
+    DataRequired, Length, Optional, Regexp, URL, ValidationError
+)
 
-from .models import URLMap
-from .settings import CUSTOM_SHORT_MAX_LENGTH, CUSTOM_SHORT_MIN_LENGTH
+from .messages import (
+    CHECK_URL_MESSAGE, REQUIRED_FIELD_MESSAGE, SHORT_ALREADY_EXIST_FORM,
+    WRONG_SHORT_NAME_MESSAGE
+)
+from .settings import (
+    CUSTOM_SHORT_MAX_LENGTH, CUSTOM_SHORT_MIN_LENGTH, SHORT_REGEXP
+)
+from .utils import is_short_unique
 
-
-SHORT_REGEXP = r'^[a-zA-Z\d]{1,16}$'
 
 class UrlCutForm(FlaskForm):
-    url = URLField(
+    original_link = URLField(
         "Длинная ссылка",
         validators=[
-            DataRequired(message='Обязательное поле'),
-            URL(message='Проверьте правильность написания ссылки!')
+            DataRequired(message=REQUIRED_FIELD_MESSAGE),
+            URL(message=CHECK_URL_MESSAGE)
         ]
     )
     custom_id = StringField(
@@ -23,9 +29,18 @@ class UrlCutForm(FlaskForm):
             Length(
                 CUSTOM_SHORT_MIN_LENGTH,
                 CUSTOM_SHORT_MAX_LENGTH,
-                message=f'Допустимая длина пользовательского варианта короткой ссылки от {CUSTOM_SHORT_MIN_LENGTH} до {CUSTOM_SHORT_MAX_LENGTH}'),
+                message=WRONG_SHORT_NAME_MESSAGE
+            ),
             Regexp(
                 regex=SHORT_REGEXP,
-                message='Ссылка может содержать только цифры и буквы "a-Z"!')]
+                message=WRONG_SHORT_NAME_MESSAGE
+            )
+        ]
     )
     submit = SubmitField('Создать')
+
+    def validate_custom_id(self, field):
+        if field.data and not is_short_unique(field.data):
+            raise ValidationError(
+                SHORT_ALREADY_EXIST_FORM.format(short=field.data)
+            )

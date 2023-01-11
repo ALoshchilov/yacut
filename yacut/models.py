@@ -1,15 +1,15 @@
 from datetime import datetime
 
-from sqlalchemy.orm import validates
 
 from .settings import BASE_URL
 from yacut import db
 
 
-URLMAP_AS_DICT_FIELDS ={
+URLMAP_AS_DICT_FIELDS = {
     'original': 'url',
-    'short': 'custom_id'
+    'short': 'short_link'
 }
+
 
 class URLMap(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -17,20 +17,18 @@ class URLMap(db.Model):
     short = db.Column(db.String(16), nullable=False, unique=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-    @validates('short')
-    def validate_short():
-        pass
-
     def from_dict(self, data):
-        for db_field, form_field in URLMAP_AS_DICT_FIELDS.items():
-            if form_field in data:
-                setattr(self, db_field, data[form_field])
+        for db_field, input_field in URLMAP_AS_DICT_FIELDS.items():
+            if input_field in data:
+                setattr(self, db_field, data[input_field])
 
     def to_dict(self):
         urlmap_dict = {}
-        for db_field in URLMAP_AS_DICT_FIELDS:
+        for db_field, input_field in URLMAP_AS_DICT_FIELDS.items():
             if db_field == 'short':
-                urlmap_dict[db_field] = f'{BASE_URL}/{str(getattr(self, db_field))}'
+                urlmap_dict[input_field] = (
+                    f'{BASE_URL}/{str(getattr(self, db_field))}'
+                )
                 continue
-            urlmap_dict[db_field] = f'{str(getattr(self, db_field))}'
+            urlmap_dict[input_field] = f'{str(getattr(self, db_field))}'
         return urlmap_dict
