@@ -5,30 +5,32 @@ from wtforms.validators import (
 )
 
 from .messages import (
-    CHECK_URL_MESSAGE, REQUIRED_FIELD_MESSAGE, SHORT_ALREADY_EXIST_FORM,
-    WRONG_SHORT_NAME_MESSAGE
+    CHECK_URL_MESSAGE, CREATE_BUTTON_TEXT, ORIGINAL_URL_FORM_DESCRIPTION,
+    ORIGINAL_TOO_LONG, REQUIRED_FIELD_MESSAGE, SHORT_ALREADY_EXIST_FORM,
+    SHORT_FORM_DESCRIPTION, WRONG_SHORT_NAME_MESSAGE
 )
-from .settings import (
-    CUSTOM_SHORT_MAX_LENGTH, CUSTOM_SHORT_MIN_LENGTH, SHORT_REGEXP
-)
-from .utils import is_short_unique
+from .models import URLMap
+from .settings import CUSTOM_SHORT_MAX_LENGTH, SHORT_REGEXP, ORIGINAL_MAX_URL_LENGTH
 
 
 class UrlCutForm(FlaskForm):
     original_link = URLField(
-        "Длинная ссылка",
+        ORIGINAL_URL_FORM_DESCRIPTION,
         validators=[
             DataRequired(message=REQUIRED_FIELD_MESSAGE),
-            URL(message=CHECK_URL_MESSAGE)
+            URL(message=CHECK_URL_MESSAGE),
+            Length(
+                max=ORIGINAL_MAX_URL_LENGTH,
+                message=ORIGINAL_TOO_LONG
+            ),
         ]
     )
     custom_id = StringField(
-        "Ваш вариант короткой ссылки",
+        SHORT_FORM_DESCRIPTION,
         validators=[
             Optional(),
             Length(
-                CUSTOM_SHORT_MIN_LENGTH,
-                CUSTOM_SHORT_MAX_LENGTH,
+                max=CUSTOM_SHORT_MAX_LENGTH,
                 message=WRONG_SHORT_NAME_MESSAGE
             ),
             Regexp(
@@ -37,10 +39,10 @@ class UrlCutForm(FlaskForm):
             )
         ]
     )
-    submit = SubmitField('Создать')
+    submit = SubmitField(CREATE_BUTTON_TEXT)
 
     def validate_custom_id(self, field):
-        if field.data and not is_short_unique(field.data):
+        if field.data and URLMap.get_url_map(field.data):
             raise ValidationError(
                 SHORT_ALREADY_EXIST_FORM.format(short=field.data)
             )

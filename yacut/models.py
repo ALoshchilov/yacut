@@ -1,14 +1,21 @@
+import re
 from datetime import datetime
+from random import sample
+from urllib.parse import urlparse
 
+from flask import url_for
+from sqlalchemy.orm import validates
 
-from .settings import BASE_URL
+from . import db
+from .messages import (
+    NO_AVAILABLE_SHORTS, ORIGINAL_TOO_LONG, REQUIRED_FIELD_MISSING,
+    SHORT_ALREADY_EXIST, WRONG_ORIGINAL_URL_MESSAGE, WRONG_SHORT_NAME_MESSAGE
+)
+from .settings import (
+    CUSTOM_SHORT_MAX_LENGTH, MAX_GENERATION_BAD_ATTEMPS, MAX_SHORT_LENGTH,
+    ORIGINAL_MAX_URL_LENGTH, SHORT_ALLOWED_SYMBOLS, SHORT_REGEXP
+)
 from yacut import db
-
-
-URLMAP_AS_DICT_FIELDS = {
-    'original': 'url',
-    'short': 'short_link'
-}
 
 
 class URLMap(db.Model):
@@ -17,18 +24,71 @@ class URLMap(db.Model):
     short = db.Column(db.String(16), nullable=False, unique=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
+
     def from_dict(self, data):
-        for db_field, input_field in URLMAP_AS_DICT_FIELDS.items():
-            if input_field in data:
-                setattr(self, db_field, data[input_field])
+        self.original = data['url'],
+        self.short = data['short_link']
 
     def to_dict(self):
-        urlmap_dict = {}
-        for db_field, input_field in URLMAP_AS_DICT_FIELDS.items():
-            if db_field == 'short':
-                urlmap_dict[input_field] = (
-                    f'{BASE_URL}/{getattr(self, db_field)}'
-                )
-                continue
-            urlmap_dict[input_field] = getattr(self, db_field)
-        return urlmap_dict
+        return {
+            'url': self.original,
+            'short_link': url_for('index_view', _external=True) + self.short
+        }
+
+    @validates('original')
+    def validate_original(self, key, original):
+        if not original:
+            raise ValueError(REQUIRED_FIELD_MISSING)
+        if len(original) > ORIGINAL_MAX_URL_LENGTH:
+            raise ValueError(ORIGINAL_TOO_LONG)
+        parsed_url = urlparse(original)
+        if not all([parsed_url.scheme, parsed_url.netloc]):
+            raise ValueError(WRONG_ORIGINAL_URL_MESSAGE)
+        return original
+
+    @validates('short')
+    def validate_short(self, key, short):
+        if short is None or short == "":
+            return None
+        if len(short) > CUSTOM_SHORT_MAX_LENGTH:
+            raise ValueError(WRONG_SHORT_NAME_MESSAGE)
+        if not re.match(SHORT_REGEXP, short):
+            raise ValueError(WRONG_SHORT_NAME_MESSAGE)
+        return short
+
+    @staticmethod
+    def generate_random_short(length=MAX_SHORT_LENGTH,):
+        return "".join(sample(SHORT_ALLOWED_SYMBOLS, length))
+
+    @staticmethod
+    def get_url_map(short):
+        return URLMap.query.filter_by(short=short).first()
+
+    @staticmethod
+    def get_url_map_or_404(short):
+        return URLMap.query.filter_by(short=short).first_or_404()
+
+    @staticmethod
+    def create_in_db(original, short=None):
+        if short is None or short == "":
+            short = URLMap.generate_unique_short_id()
+        url_map = URLMap.get_url_map(short)
+        if url_map:
+            raise ValueError(
+                SHORT_ALREADY_EXIST.format(short=url_map.short)
+            )
+        url_map = URLMap(original=original, short=short)
+        db.session.add(url_map)
+        db.session.commit()
+        return url_map
+
+    @staticmethod
+    def generate_unique_short_id(
+        max_bad_attemps=MAX_GENERATION_BAD_ATTEMPS
+    ):
+        short = URLMap.generate_random_short()
+        for _ in range(max_bad_attemps):
+            if not URLMap.get_url_map(short):
+                return short
+            short = URLMap.generate_random_short()
+        raise AssertionError(NO_AVAILABLE_SHORTS)
