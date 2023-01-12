@@ -22,7 +22,7 @@ def add_url_map():
         raise InvalidAPIUsage(str(error))
     except ValueError as error:
         raise InvalidAPIUsage(str(error))
-    except:
+    except Exception:
         raise InvalidAPIUsage(COMMON_SERVER_ERROR, 500)
 
 

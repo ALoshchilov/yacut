@@ -26,7 +26,7 @@ def index_view():
                 _external=True
             )
         )
-    except:
+    except Exception:
         flash(COMMON_SERVER_ERROR)
         return render_template('index.html', form=form)
 
