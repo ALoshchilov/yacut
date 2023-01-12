@@ -1,4 +1,3 @@
-from sre_parse import SPECIAL_CHARS
 from string import ascii_letters, digits
 
 # Настройки генератора коротких ссылок

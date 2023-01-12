@@ -10,7 +10,9 @@ from .messages import (
     SHORT_FORM_DESCRIPTION, WRONG_SHORT_NAME_MESSAGE
 )
 from .models import URLMap
-from .settings import CUSTOM_SHORT_MAX_LENGTH, SHORT_REGEXP, ORIGINAL_MAX_URL_LENGTH
+from .settings import (
+    CUSTOM_SHORT_MAX_LENGTH, SHORT_REGEXP, ORIGINAL_MAX_URL_LENGTH
+)
 
 
 class UrlCutForm(FlaskForm):

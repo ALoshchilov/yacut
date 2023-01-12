@@ -1,8 +1,8 @@
-from flask import flash, redirect, render_template
+from flask import flash, redirect, render_template, url_for
 
 from . import app
 from .forms import UrlCutForm
-from .messages import SHORT_ALREADY_EXIST, SHORT_ALREADY_EXIST_FORM
+from .messages import COMMON_SERVER_ERROR, FORM_VALIDATION_ERROR
 from .models import URLMap
 
 
@@ -10,31 +10,25 @@ from .models import URLMap
 def index_view():
     form = UrlCutForm()
     if not form.validate_on_submit():
+        flash(FORM_VALIDATION_ERROR)
         return render_template('index.html', form=form)
-    # short = form.custom_id.data or URLMap.generate_unique_short_id()
-    # # if not short:
-    # #     short = URLMap.generate_unique_short_id()
-    # # if not is_short_unique(short):
-    # #     flash(SHORT_ALREADY_EXIST.format(short=short))
-    # #     return render_template('index.html', form=form)
-    # url_map = URLMap(
-    #     original=form.original_link.data,
-    #     short=short
-    # )
-    # db.session.add(url_map)
-    # db.session.commit()
     try:
-        url_map =  URLMap.create_in_db(
+        url_map = URLMap.create_in_db(
             original=form.original_link.data,
             short=form.custom_id.data
         )
         return render_template(
             'index.html',
-            **{'form': form, 'short': url_map.short}
+            form=form,
+            short=url_for(
+                'redirect_to_original',
+                short_id=url_map.short,
+                _external=True
+            )
         )
-    except ValueError as error:
-        flash(SHORT_ALREADY_EXIST_FORM.format(short=form.custom_id.data))
-
+    except:
+        flash(COMMON_SERVER_ERROR)
+        return render_template('index.html', form=form)
 
 
 @app.route('/<short_id>')
