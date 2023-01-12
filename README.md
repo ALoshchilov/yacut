@@ -6,6 +6,7 @@
 
 ## Информация об авторе
 [Александр Лощилов](mailto:loshchilov.aleksandr@gmail.com?subject=[GitHub]%20PEP%20parser)
+Факультет Python Backend. Когорта 10+.
 
 ## Примененный стек технологий
 * Python
