@@ -1,6 +1,6 @@
+import re
 from datetime import datetime
 from random import sample
-import re
 from urllib.parse import urlparse
 
 from flask import url_for
