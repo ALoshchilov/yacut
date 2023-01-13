@@ -31,5 +31,5 @@ def add_url_map():
 def get_original_url(short_id):
     url = URLMap.get_url_map(short=short_id)
     if url is not None:
-        return jsonify({'url': URLMap.get_url_map(short=short_id).original})
+        return jsonify({'url': url.original})
     raise InvalidAPIUsage(SHORT_NOT_FOUND, 404)

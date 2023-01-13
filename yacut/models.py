@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from flask import url_for
 
 from . import db
+from .error_handlers import MaxGenerationAttemptsExceeded
 from .messages import (
     NO_AVAILABLE_SHORTS, ORIGINAL_TOO_LONG, REQUIRED_FIELD_MISSING,
     SHORT_ALREADY_EXIST, WRONG_ORIGINAL_URL_MESSAGE, WRONG_SHORT_NAME_MESSAGE
@@ -92,4 +93,4 @@ class URLMap(db.Model):
             short = URLMap.generate_random_short()
             if not URLMap.get_url_map(short):
                 return short
-        raise TimeoutError(NO_AVAILABLE_SHORTS)
+        raise MaxGenerationAttemptsExceeded(NO_AVAILABLE_SHORTS)

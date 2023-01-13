@@ -3,7 +3,19 @@ from flask import jsonify, render_template
 from . import app, db
 
 
+class MaxGenerationAttemptsExceeded(Exception):
+    """
+    Исключение для событий, свзяанных с
+    исчерпанием числа доступных попыток генерации случайных ссылок
+    """
+    pass
+
+
 class InvalidAPIUsage(Exception):
+    """
+    Исключение для событий, свзяанных с
+    некорректными использованием API
+    """
 
     status_code = 400
 
