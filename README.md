@@ -56,7 +56,17 @@ python3 -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-При первом запуске инициализировать базу данных:
+При первом запуске проекта создать базу данных:
+
+```
+flask shell
+from yacut import db
+db.create_all()
+exit()
+```
+
+
+В случае первичной миграции создать репозиторий для хранения миграций:
 
 ```
 flask db init
