@@ -15,20 +15,23 @@ def add_url_map():
         return jsonify(
             URLMap.create_in_db(
                 original=data.get('url'),
+                # original=URLMap.validate_original(data.get('url')),
                 short=data.get('custom_id')
+                # short=URLMap.validate_short(data.get('custom_id')),
             ).to_dict()
         ), 201
-    except AssertionError as error:
+    except (AssertionError, ValueError) as error:
         raise InvalidAPIUsage(str(error))
-    except ValueError as error:
-        raise InvalidAPIUsage(str(error))
-    except Exception:
-        raise InvalidAPIUsage(COMMON_SERVER_ERROR, 500)
+    # except Exception as error:
+    #     raise InvalidAPIUsage(
+    #         COMMON_SERVER_ERROR.format(error=str(error)),
+    #         500
+    #     )
 
 
 @app.route('/api/id/<short_id>/', methods=['GET'])
 def get_original_url(short_id):
     url = URLMap.get_url_map(short=short_id)
     if url is not None:
-        return jsonify({'url': url.original})
+        return jsonify({'url': URLMap.get_url_map(short=short_id).original})
     raise InvalidAPIUsage(SHORT_NOT_FOUND, 404)

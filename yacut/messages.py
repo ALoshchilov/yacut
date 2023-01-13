@@ -1,5 +1,5 @@
 CHECK_URL_MESSAGE = 'Проверьте правильность написания ссылки!'
-COMMON_SERVER_ERROR = 'Произошла ошибка на стороне сервера'
+COMMON_SERVER_ERROR = 'Произошла ошибка на стороне сервера.  Детали: {error}'
 BODY_MISSING = 'Отсутствует тело запроса'
 FORM_VALIDATION_ERROR = 'Проверьте корректность заполнения полей!'
 NO_AVAILABLE_SHORTS = (

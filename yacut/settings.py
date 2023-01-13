@@ -1,11 +1,11 @@
+import re
 from string import ascii_letters, digits
 
 # Настройки генератора коротких ссылок
 MAX_GENERATION_BAD_ATTEMPS = 20
 MAX_SHORT_LENGTH = 6
-SPECIAL_SYMBOLS = r'!@#$%^&*{\}\[\]\|(\)'
 SHORT_ALLOWED_SYMBOLS = ascii_letters + digits
-SHORT_REGEXP = rf'(^[{SHORT_ALLOWED_SYMBOLS}]*$)'
+SHORT_REGEXP = rf'(^[{re.escape(SHORT_ALLOWED_SYMBOLS)}]*$)'
 
 # Настройки пользовательских коротких ссылок
 CUSTOM_SHORT_MAX_LENGTH = 16

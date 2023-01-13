@@ -54,9 +54,7 @@
               </p>
             {% endif %}
             {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                {% for message in messages %}{{ message }}{% endfor %}
-              {% endif %}
+              {% for message in messages %}{{ message }}{% endfor %}
             {% endwith %}
           </div>
           <div class="col-sm"></div>
