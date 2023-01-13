@@ -14,19 +14,17 @@ def add_url_map():
     try:
         return jsonify(
             URLMap.create_in_db(
-                original=data.get('url'),
-                # original=URLMap.validate_original(data.get('url')),
-                short=data.get('custom_id')
-                # short=URLMap.validate_short(data.get('custom_id')),
+                original=URLMap.validate_original(data.get('url')),
+                short=URLMap.validate_short(data.get('custom_id')),
             ).to_dict()
         ), 201
     except (AssertionError, ValueError) as error:
         raise InvalidAPIUsage(str(error))
-    # except Exception as error:
-    #     raise InvalidAPIUsage(
-    #         COMMON_SERVER_ERROR.format(error=str(error)),
-    #         500
-    #     )
+    except Exception as error:
+        raise InvalidAPIUsage(
+            COMMON_SERVER_ERROR.format(error=str(error)),
+            500
+        )
 
 
 @app.route('/api/id/<short_id>/', methods=['GET'])

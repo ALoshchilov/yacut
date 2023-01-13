@@ -4,7 +4,6 @@ from random import sample
 from urllib.parse import urlparse
 
 from flask import url_for
-from sqlalchemy.orm import validates
 
 from . import db
 from .messages import (
@@ -31,27 +30,15 @@ class URLMap(db.Model):
     def to_dict(self):
         return dict(
             url=self.original,
-            short_link=url_for('redirect_to_original', short_id=self.short, _external=True)
+            short_link=url_for(
+                'redirect_to_original',
+                short_id=self.short,
+                _external=True
+            )
         )
-    
-    # Костыль
-    # @validates('original')
-    # def validate_original_wrapper(self, key, original):
-    #     return URLMap.validate_original(original)
 
-    # @staticmethod
-    # def validate_original(original):
-    #     if not original:
-    #         raise ValueError(REQUIRED_FIELD_MISSING)
-    #     if len(original) > ORIGINAL_MAX_URL_LENGTH:
-    #         raise ValueError(ORIGINAL_TOO_LONG)
-    #     parsed_url = urlparse(original)
-    #     if not all([parsed_url.scheme, parsed_url.netloc]):
-    #         raise ValueError(WRONG_ORIGINAL_URL_MESSAGE)
-    #     return original
-
-    @validates('original')
-    def validate_original(self, key, original):
+    @staticmethod
+    def validate_original(original):
         if not original:
             raise ValueError(REQUIRED_FIELD_MISSING)
         if len(original) > ORIGINAL_MAX_URL_LENGTH:
@@ -61,9 +48,8 @@ class URLMap(db.Model):
             raise ValueError(WRONG_ORIGINAL_URL_MESSAGE)
         return original
 
-    
-    @validates('short')
-    def validate_short(self, key, short):
+    @staticmethod
+    def validate_short(short):
         if short is None or short == "":
             return None
         if len(short) > CUSTOM_SHORT_MAX_LENGTH:
@@ -71,36 +57,6 @@ class URLMap(db.Model):
         if not re.match(SHORT_REGEXP, short):
             raise ValueError(WRONG_SHORT_NAME_MESSAGE)
         return short
-
-    # @validates('original')
-    # def validate_original_warapper(self, key, original):
-    #     print(self)
-    #     print(key)
-    #     print(original)
-    #     return original
-
-        
-
-    # @staticmethod
-    # def validate_original(original):
-    #     if not original:
-    #         raise ValueError(REQUIRED_FIELD_MISSING)
-    #     if len(original) > ORIGINAL_MAX_URL_LENGTH:
-    #         raise ValueError(ORIGINAL_TOO_LONG)
-    #     parsed_url = urlparse(original)
-    #     if not all([parsed_url.scheme, parsed_url.netloc]):
-    #         raise ValueError(WRONG_ORIGINAL_URL_MESSAGE)
-    #     return original
-
-    # @staticmethod
-    # def validate_short(short):
-    #     if short is None or short == "":
-    #         return None
-    #     if len(short) > CUSTOM_SHORT_MAX_LENGTH:
-    #         raise ValueError(WRONG_SHORT_NAME_MESSAGE)
-    #     if not re.match(SHORT_REGEXP, short):
-    #         raise ValueError(WRONG_SHORT_NAME_MESSAGE)
-    #     return short
 
     @staticmethod
     def generate_random_short(length=MAX_SHORT_LENGTH,):
@@ -131,7 +87,7 @@ class URLMap(db.Model):
     @staticmethod
     def generate_unique_short_id(
         max_bad_attemps=MAX_GENERATION_BAD_ATTEMPS
-    ):        
+    ):
         for _ in range(max_bad_attemps):
             short = URLMap.generate_random_short()
             if not URLMap.get_url_map(short):

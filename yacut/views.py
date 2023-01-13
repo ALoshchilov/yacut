@@ -1,4 +1,6 @@
-from flask import flash, redirect, render_template, url_for
+from flask import (
+    flash, redirect, render_template, send_from_directory, url_for
+)
 
 from . import app
 from .forms import UrlCutForm
@@ -26,9 +28,19 @@ def index_view():
                 _external=True
             )
         )
-    except Exception:
-        flash(COMMON_SERVER_ERROR)
+    except Exception as error:
+        flash(COMMON_SERVER_ERROR.format(error=str(error)))
         return render_template('index.html', form=form)
+
+
+@app.route('/api/docs')
+def swagger_ui():
+    return render_template('swagger_ui.html')
+
+
+@app.route('/api/spec')
+def get_spec():
+    return send_from_directory(app.root_path, 'openapi.yml')
 
 
 @app.route('/<short_id>')
